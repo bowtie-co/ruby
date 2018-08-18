@@ -45,6 +45,7 @@ RUN set -ex \
 		xz \
 		yaml-dev \
 		zlib-dev \
+		jemalloc-dev \
 	\
 	&& wget -O ruby.tar.xz "https://cache.ruby-lang.org/pub/ruby/${RUBY_MAJOR%-rc}/ruby-$RUBY_VERSION.tar.xz" \
 	&& echo "$RUBY_DOWNLOAD_SHA256 *ruby.tar.xz" | sha256sum -c - \
@@ -72,8 +73,10 @@ RUN set -ex \
 		--build="$gnuArch" \
 		--disable-install-doc \
 		--enable-shared \
+		--with-jemalloc \
 	&& make -j "$(nproc)" \
 	&& make install \
+	&& ruby -r rbconfig -e "puts RbConfig::CONFIG['libs']" \
 	\
 	&& runDeps="$( \
 		scanelf --needed --nobanner --format '%n#p' --recursive /usr/local \
@@ -89,6 +92,7 @@ RUN set -ex \
 		procps \
 		yaml-dev \
 		zlib-dev \
+		jemalloc-dev \
 	&& apk del .ruby-builddeps \
 	&& cd / \
 	&& rm -r /usr/src/ruby \

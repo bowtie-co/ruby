@@ -47,7 +47,7 @@ RUN set -ex \
 		xz-utils \
 	' \
 	&& apt-get update \
-	&& apt-get install -y --no-install-recommends $buildDeps \
+	&& apt-get install -y --no-install-recommends libjemalloc-dev $buildDeps \
 	&& rm -rf /var/lib/apt/lists/* \
 	\
 	&& wget -O ruby.tar.xz "https://cache.ruby-lang.org/pub/ruby/${RUBY_MAJOR%-rc}/ruby-$RUBY_VERSION.tar.xz" \
@@ -74,8 +74,10 @@ RUN set -ex \
 		--build="$gnuArch" \
 		--disable-install-doc \
 		--enable-shared \
+		--with-jemalloc \
 	&& make -j "$(nproc)" \
 	&& make install \
+	&& ruby -r rbconfig -e "puts RbConfig::CONFIG['libs']" \
 	\
 	&& dpkg-query --show --showformat '${package}\n' \
 		| grep -P '^libreadline\d+$' \
